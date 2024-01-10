@@ -1,3 +1,3 @@
 import personaje
-class Ia(personaje):
+class Ia(personaje):    
     pass

@@ -3,3 +3,4 @@ class objet:
         pass
     def interactuar():
         print("construyendo")
+    
