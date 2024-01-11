@@ -1,6 +1,6 @@
-import mysql.connector, objeto, random, pygame,os
+import mysql.connector,  random, pygame,os
 conexion=mysql.connector.connect(
-    host="3306",
+    host="localhost",
     user="root",
     password="LuMITY_BV1",
 )
