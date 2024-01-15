@@ -1,21 +1,16 @@
-import pygame
-import os
-
+import pygame,os
+from bd import ConexionBD
+conexion=ConexionBD()
 pygame.init()
-
+dt = 0
+tra=False
 size = (1000, 500)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Juego tilin")
 clock = pygame.time.Clock()
 running = True
 black = (255, 255, 255)
-mov_x = 10
-mov_y = 10
-speed_x = 3
-speed_y = 3
-veces = 0
-
-
+player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 class pelota:
     def __init__(self):
         self.image_vida = pelota = pygame.image.load(os.path.join(os.path.dirname(__file__), "Image", "barra.png"))
@@ -23,47 +18,40 @@ class pelota:
         self.rect.move_ip(500, 10)
 
 
-def Juego():    
-    global mov_x, mov_y, veces, speed_x, speed_y
+def Juego():
+    pygame.mouse.set_visible(False)
+    global player_pos, tra, screen
     hasperdido = pygame.image.load(os.path.join(os.path.dirname(__file__), "Image", "Hasganado.png")).convert()
     running = True
     while running:
-        zaz = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 return False
-            if event.type== pygame.KEYDOWN:
-                if event.key==pygame.K_e:
-                    if distance_obj<=100:
-                        running=False
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_h:
+                    running = False                    
         screen.fill("black")
-        coordenates = pygame.mouse.get_pos()
-        distance = ((mov_x - coordenates[0]) ** 2 + (mov_y - coordenates[1]) ** 2) ** 0.5
-        pygame.draw.circle(screen, black if distance >= 20 else (255, 0, 0), (mov_x, mov_y), 20)
-        
-        objeto=pygame.draw.circle(screen,"white", (130,240),100)
-
-        distance_obj=((mov_x-130)**2 + (mov_y-240)**2)**0.5
-
-        if distance <= 20:
-            veces += 1
-        if veces >= 100:
-            screen.blit(hasperdido, (250, 264))
-            mov_x = 10
-            mov_y = 10
-            veces = 0
-            pygame.display.flip()
-            pygame.time.delay(2000)  # Espera 2 segundos antes de volver a ejecutar el juego
-            return
-        mov_y += speed_y
-        mov_x += speed_x
-        if mov_x >= size[0] or mov_x < 0:
-            speed_x *= -1
-        if mov_y >= size[1] or mov_y < 0:
-            speed_y *= -1
+        pygame.draw.circle(screen, black, player_pos, 20)
+        pygame.draw.rect(screen, black, (200, 400, 20, 20))
+        keys = pygame.key.get_pressed()
+        mult = 1
+        if keys[pygame.K_LSHIFT]:
+            mult = 2
+        if keys[pygame.K_w]:
+            if player_pos.y > 20:
+                player_pos.y -= 200 * dt * mult
+        if keys[pygame.K_s]:
+            if player_pos.y < size[1] - 20:
+                player_pos.y += 200 * dt * mult
+        if keys[pygame.K_a]:
+            if player_pos.x > 20:
+                player_pos.x -= 200 * dt * mult
+        if keys[pygame.K_d]:
+            if player_pos.x < size[0] - 20:
+                player_pos.x += 200 * dt * mult
         pygame.display.flip()
-        clock.tick(60)
+        dt = clock.tick(60) / 1000
 
 
 def menu():
@@ -83,6 +71,7 @@ def menu():
             screen.blit(texto, (430, boton["id"] * 100 + 10))
 
     while running:
+        pygame.mouse.set_visible(False)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -94,6 +83,8 @@ def menu():
                         return False
                     elif botones[0]["selected"]:
                         Juego()
+                    elif botones[2]["selected"]:
+                        conexion.ejecutar_query(f"INSERT INTO juego_principal SET posicion='{player_pos}'")
                 elif event.key == pygame.K_DOWN:
                     id = 0
                     for boton in botones:
@@ -127,10 +118,10 @@ def menu():
         clock.tick(60)
 
 
-def main():
-        carro=Juego()
-        print(carro)
-        if carro!=False:
+def main():   
+    conexion.inicializar_base_datos()     
+    carro=Juego()
+    if carro!=False:
             menu()
 
 main()
